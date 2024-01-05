@@ -15,4 +15,11 @@ class Product extends Model
     {
         return $this->belongsTo(Recipe::class);
     }
+
+    protected $fillable = [
+        'recipe_id',
+        'name',
+        'quantity',
+        'units',
+    ];
 }

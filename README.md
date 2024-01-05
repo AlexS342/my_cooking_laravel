@@ -30,11 +30,14 @@
 
 # My cooking (my_cooking_laravel)
 
-##### Создать новый проект
-`composer create-project laravel/laravel example-app`
+##### Создать новый проект: `composer create-project laravel/laravel example-app`
 
-##### Файл docker_compose.yml:
-Для создания базы данных и взаимодействия с ней добавлен файл docker_compose.yml
+##### Файл docker_compose.yml, для запуска: `sudo docker compose up -d`
 
-Для запуска: `sudo docker compose up -d`
+##### Инициализация git:
+- Инициализируем git: `git init`
+- Назначаем главную ветку: `git branch -M main`
+- Делаем первый коммит: `git commit -m "first commit"`
+- Указываем расположение удаленного репозитория: `git remote add origin git@github.com:AlexS342/my_cooking_laravel.git`
+- Пушим коммит в удаленный репозиторий: `git push -u origin main`
 

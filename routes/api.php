@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\TestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,3 +22,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/test-get-api', [TestController::class, 'testGetApi']);
 Route::post('/test-post-api', [TestController::class, 'testPostApi']);
+
+Route::middleware('auth:sanctum')->post('/get-all-recipe', [RecipeController::class, 'getAllRecipes']);

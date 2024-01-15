@@ -61,5 +61,10 @@
 3. `php artisan migrate`
 4. В файле `app/Http/Kernel.php` в массиве `api` нужно раскоментировать класс `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class`
 5. В файле `config/cors.php` установлено `'supports_credentials' => true,`, это добавит заголовок `Access-Control-Allow-Credentials=true`
+6. В файле `app/Http/Kernel.php` в массив `api` нужно добавит `\App\Http\Middleware\EncryptCookies::class` и `\Illuminate\Session\Middleware\StartSession::class`
+   + если этого не сделать, то для работы с api нужно выдовать токены или обращатся к роутам в файле `routes/web.php`
+   + В реализации аутентификации и авторизации на стороне фронтенда есть важные особенности, для понимания смотри описание в вайле `my_cooking_vue/README.md`
+8. 
+9. 
 
 

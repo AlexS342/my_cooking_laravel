@@ -20,7 +20,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/test-get-api', [TestController::class, 'testGetApi']);
-Route::post('/test-post-api', [TestController::class, 'testPostApi']);
-
-Route::middleware('auth:sanctum')->post('/get-all-recipe', [RecipeController::class, 'getAllRecipes']);
+Route::post('/get-all-recipe', [RecipeController::class, 'getAllRecipes']);
+Route::middleware('auth:sanctum')->post('/get-my-user-recipe', [RecipeController::class, 'getMyUserRecipes']);
+Route::middleware('auth:sanctum')->post('/get-save-user-recipe', [RecipeController::class, 'getSaveUserRecipes']);

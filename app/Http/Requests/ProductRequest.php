@@ -24,7 +24,7 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:5', 'max:150'],
+            'name' => ['required', 'string', 'min:3', 'max:150'],
             'quantity' => ['nullable', 'numeric', 'min:1', 'max:1000'],
             'units' => ['required', 'required', new Enum(ProductUnits::class)]
         ];

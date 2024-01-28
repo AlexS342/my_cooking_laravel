@@ -1,0 +1,13 @@
+version: '3.1'
+services:
+    postgres:
+        image: 'postgres:15.4'
+        restart: always
+        environment:
+            - POSTGRES_USER=user
+            - POSTGRES_PASSWORD=pass
+            - POSTGRES_DB=cooking
+        ports:
+            - '6500:5432'
+        volumes:
+            - ./data:/var/lib/postgresql/data

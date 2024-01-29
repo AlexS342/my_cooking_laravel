@@ -87,19 +87,27 @@ class RecipeController extends Controller
         $recipe = $request->all();
 
         try {
-        $userId = DB::table('recipes')->insertGetId(['user_id' => $user->id, 'title' => $recipe['title']]);
+            $userId = DB::table('recipes')
+                ->insertGetId([
+                    'user_id' => $user->id,
+                    'title' => $recipe['title'],
+                    'portion' => $recipe['portion'],
+                    'full_time' => $recipe['full_time'],
+                    'category' => $recipe['category'],
+                    'type' => $recipe['type'],
+                ]);
 
-        $arrProducts=[];
-        foreach ($recipe['products'] as $product)
-        {
-            $arrProducts[] = [...$product, 'recipe_id' => $userId];
-        }
+            $arrProducts=[];
+            foreach ($recipe['products'] as $product)
+            {
+                $arrProducts[] = [...$product, 'recipe_id' => $userId];
+            }
 
-        $arrActions=[];
-        foreach ($recipe['actions'] as $action)
-        {
-            $arrActions[] = [...$action, 'recipe_id' => $userId];
-        }
+            $arrActions=[];
+            foreach ($recipe['actions'] as $action)
+            {
+                $arrActions[] = [...$action, 'recipe_id' => $userId];
+            }
 
 
             DB::table('products')->insert([...$arrProducts]);

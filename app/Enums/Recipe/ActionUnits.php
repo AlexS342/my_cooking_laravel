@@ -4,10 +4,10 @@ namespace App\Enums\Recipe;
 
 enum ActionUnits:string
 {
-    CASE DN = 'День';
-    CASE CH = 'Час';
-    CASE MN = 'Минута';
-    CASE SK = 'Секунда';
+    CASE DN = 'д.';
+    CASE CH = 'ч.';
+    CASE MN = 'мин.';
+    CASE SK = 'сек.';
 
     public static function getEnums() : array
     {

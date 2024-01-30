@@ -17,12 +17,12 @@ class ActionSeeder extends Seeder
     {
         $arr_products = [
             ['Нарезать помидорки тонкими круглишками', 3, ActionUnits::MN->value,],
-            ['Отмарить картофеть в мундире', 5, ActionUnits::MN->value,],
+            ['Отварить картофеть в мундире', 20, ActionUnits::MN->value,],
             ['Нарезать огуцы соломкой', 7, ActionUnits::MN->value,],
             ['Отварить гречку в большой кастрюле', 15, ActionUnits::MN->value,],
-            ['Отварить рис в большой кастрюле', 36, ActionUnits::MN->value,],
-            ['Нарезать баклажаны колечками и уложить на них натертый сыр', 200, ActionUnits::SK->value,],
-            ['Обжарить в кипящем масле', 25, ActionUnits::MN->value,],
+            ['Отварить рис в большой кастрюле', 30, ActionUnits::MN->value,],
+            ['Нарезать баклажаны колечками и уложить на них натертый сыр', 600, ActionUnits::SK->value,],
+            ['Обжарить в кипящем масле', 5, ActionUnits::MN->value,],
             ['Посолить и дать постоять в маринаде', 440, ActionUnits::SK->value,],
             ['Запекать в духовке до румяной корочки', 2, ActionUnits::MN->value,],
             ['Тушить на медленом огне, периодически помешивая', 1, ActionUnits::DN->value,],
@@ -44,19 +44,6 @@ class ActionSeeder extends Seeder
 
             for ($j = 0; $j < 15; $j++)
             {
-//                $product = $arr_products[array_rand($arr_products, 1)];
-//                $name = $product[0];
-//                $quantity = $product[1];
-//                $units = $product[2];
-//
-//                Action::factory()->create([
-//                    'recipe_id' => $recipe_id,
-//                    'name' => $name,
-//                    'quantity' => $quantity,
-//                    'units' => $units,
-//                ]);
-
-
                 $data['recipe_id'] = $recipe_id;
 
                 $product = $arr_products[array_rand($arr_products, 1)];

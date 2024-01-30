@@ -5,20 +5,21 @@ namespace App\Enums\Recipe;
 enum ProductUnits:string
 {
     CASE KG = 'кг';
-    CASE GRAM = 'грамм';
-    CASE LITER = 'литр';
-    CASE ML = 'мил. литр';
-    CASE SHT = 'шт.';
-    CASE STL = 'ст.ложка';
-    CASE DSL = 'дес.ложка';
-    CASE CHL = 'ч.ложка';
-    CASE ST = 'стакан';
+    CASE GRAM = 'г.';
+    CASE LITER = 'л.';
+    CASE ML = 'мл';
+    CASE SHT = 'шт';
+    CASE STL = 'ст.л.';
+    CASE DSL = 'дес.л.';
+    CASE CHL = 'ч.л.';
+    CASE ST = 'ст.';
     CASE UP = 'уп.';
     CASE PVK = 'по вкусу';
 
     public static function getEnums() : array
     {
         return [
+            self::KG->value,
             self::GRAM->value,
             self::LITER->value,
             self::ML->value,

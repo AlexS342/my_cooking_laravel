@@ -34,7 +34,7 @@ class RecipeSeeder extends Seeder
             $data['user_id'] = rand(1,2);
             $data['description'] = $descriptions[0];
             $data['title'] = $item;
-            $data['full_time'] = rand(0, count($full_times)-1);
+            $data['full_time'] = $full_times[rand(0, count($full_times)-1)];
             $data['portion'] = rand(0, count($portions)-1);
             $data['type'] = $type[rand(0, count($type)-1)];
             $data['category'] = $category[rand(0, count($category)-1)];

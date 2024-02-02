@@ -142,4 +142,42 @@ class RecipeController extends Controller
 
         return response()->json($recipe);
     }
+
+    public function delMyRecipe(Request $request)
+    {
+        $user = Auth::user();
+        $data = $request->all();
+
+        if($user['id'] != $data['user_id'])
+        {
+            return response()->json(['answer'=>false, 'message'=>'Нельзя удалять чужие рецепты']);
+        }
+
+        $recipeId = $data['id'];
+
+        try {
+            $deletedActions = DB::table('actions')->where('recipe_id', '=', $data['id'])->delete();
+            $deletedProducts = DB::table('products')->where('recipe_id', '=', $data['id'])->delete();
+            $deletedRecipe = DB::table('recipes')->where('id', '=', $data['id'])->delete();
+
+
+
+            $answerData = [
+                'answer'=>true,
+                'message'=>'Рецепт ' . $recipeId . ' успешно удален',
+//                'deletedActions'=>$deletedActions,
+//                'deletedProducts'=>$deletedProducts,
+//                'deletedRecipe'=>$deletedRecipe,
+            ];
+            return response()->json($answerData);
+        }
+        catch (Exception $e){
+            $answerData = [
+                'answer'=>false,
+                'message'=>'Рецепт ' . $recipeId . ' не удален',
+                'errMessage'=>$e->getMessage(),
+            ];
+            return response()->json($answerData);
+        }
+    }
 }

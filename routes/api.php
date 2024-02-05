@@ -25,4 +25,5 @@ Route::post('/get-all-recipe', [RecipeController::class, 'getAllRecipes']);
 Route::middleware('auth:sanctum')->post('/get-my-user-recipe', [RecipeController::class, 'getMyUserRecipes']);
 Route::middleware('auth:sanctum')->post('/get-save-user-recipe', [RecipeController::class, 'getSaveUserRecipes']);
 Route::middleware('auth:sanctum')->post('/add-my-recipe', [RecipeController::class, 'addMyRecipe']);
+Route::middleware('auth:sanctum')->post('/edit-my-recipe', [RecipeController::class, 'editMyRecipe']);
 Route::middleware('auth:sanctum')->delete('/del-my-recipe', [RecipeController::class, 'delMyRecipe']);

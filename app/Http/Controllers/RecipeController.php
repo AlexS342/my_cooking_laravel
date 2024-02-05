@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpParser\Node\Expr\Cast\Object_;
+use function PHPUnit\Framework\isEmpty;
 
 class RecipeController extends Controller
 {
@@ -128,16 +129,211 @@ class RecipeController extends Controller
 
     }
 
+    /**
+     * Возвращает один рецепт по id рецепта
+     * @param RecipeRequest $request
+     * @return JsonResponse
+     */
     public function getRecipeForId(Request $request):JsonResponse
     {
         $data = $request->all();
 
         try {
             $recipe = Recipe::find($data['recipe_id']);
-            $recipe->products = Recipe::find($data['recipe_id'])->products;
-            $recipe->actions = Recipe::find($data['recipe_id'])->actions;
+
+            $products = Product::query()->where('recipe_id', $data['recipe_id'])->orderBy('id')->get();
+            $recipe->products = $products;
+
+            $actions = Action::query()->where('recipe_id', $data['recipe_id'])->orderBy('id')->get();
+            $recipe->actions = $actions;
         }catch (Exception $e){
             return response()->json($e);
+        }
+
+        return response()->json($recipe);
+    }
+
+    /**
+     * Вносит изменения в существующий рецепт
+     * @param RecipeRequest $request
+     * @return JsonResponse
+     */
+    public function editMyRecipe(RecipeRequest $request)
+    {
+        $user = Auth::user();
+        $recipe = $request->all();
+
+        //Проверяем, что пользователь является владельцем рецепта
+        if($user['id'] != $recipe['user_id'])
+        {
+            return response()->json(['answer'=>false, 'message'=>'Нельзя изменять чужие рецепты']);
+        }
+
+        //Сохраняем изменения в рецепте (продукты и действия сохроняются отдельно)
+        $updateRecipe = DB::table('recipes')->where('id', $recipe['id'])
+            ->update([
+                'user_id' => $user['id'],
+                'title' => $recipe['title'],
+                'portion' => $recipe['portion'],
+                'full_time' => $recipe['full_time'],
+                'category' => $recipe['category'],
+                'type' => $recipe['type'],
+            ]);
+
+        //Разделяем продукты на update и insert
+        $updateProducts = [];
+        $insertProducts = [];
+        foreach ($recipe['products'] as $product)
+        {
+            if(empty($product['id']))
+            {
+                $insertProducts[] = $product;
+            }else{
+                $updateProducts[] = $product;
+            }
+        }
+
+        //Разделяем действия на update и insert
+        $updateActions = [];
+        $insertActions = [];
+        foreach ($recipe['actions'] as $action)
+        {
+            if(empty($product['id']))
+            {
+                $insertActions[] = $action;
+            }else{
+                $updateActions[] = $action;
+            }
+        }
+
+        //Получаем ID продуктов, которые уже есть в базе данных
+        $dbProducts = DB::table('products')->where('recipe_id', '=', $recipe['id'])->select('id')->get();
+        //Получаем ID действий, которые уже есть в базе данных
+        $dbActions = DB::table('actions')->where('recipe_id', '=', $recipe['id'])->select('id')->get();
+
+        //Если какие-то продукты были удалены при редактировании, то находим их ID
+        $f = false;
+        $delProducts =[];
+        foreach ($dbProducts as $item)
+        {
+            foreach($updateProducts as $product)
+            {
+                if($product['id'] == $item->id)
+                {
+                    $f = true;
+                }
+            }
+            if(!$f)
+            {
+                $delProducts[] = $item->id;
+            }
+            $f = false;
+        }
+
+        //Если какие-то действия были удалены при редактировании, то находим их ID
+        $f = false;
+        $delActions =[];
+        foreach ($dbActions as $item)
+        {
+            foreach($updateActions as $action)
+            {
+                if($action['id'] == $item->id)
+                {
+                    $f = true;
+                }
+            }
+            if(!$f)
+            {
+                $delActions[] = $item->id;
+            }
+            $f = false;
+        }
+
+        //Если найдены продукты для удаления, то удаляем
+        try {
+            if(count($delProducts) > 0){
+                $deletedProducts = [];
+                foreach ($delProducts as $key => $item)
+                {
+                    $deletedProducts[] = DB::table('products')->where('id', '=', $item)->delete();
+                }
+            }
+        }catch (Exception $e){
+            return response()->json($e);
+        }
+
+        //Если найдены действия для удаления, то удаляем
+        try {
+            $deletedActions = [];
+            if(count($delActions) > 0)
+            {
+                foreach ($delActions as $key => $item)
+                {
+                    $deletedActions[] = DB::table('actions')->where('id', '=', $item)->delete();
+                }
+            }
+        }catch (Exception $e){
+            return response()->json($e);
+        }
+
+        //Обновляем продукты
+        $editProducts = [];
+        if(count($updateProducts) > 0)
+        {
+            foreach ($updateProducts as $item)
+            {
+                $editProducts[] = DB::table('products')->where('id', $item['id'])
+                    ->update([
+                        'name' => $item['name'],
+                        'quantity' => $item['quantity'],
+                        'units' => $item['units'],
+                    ]);
+            }
+        }
+
+        //Обновляем действия
+        $editActions = [];
+        if(count($updateActions) > 0)
+        {
+            foreach ($updateActions as $item)
+            {
+                $editActions[] = DB::table('actions')->where('id', $item['id'])
+                    ->update([
+                        'name' => $item['name'],
+                        'quantity' => $item['quantity'],
+                        'units' => $item['units'],
+                    ]);
+            }
+        }
+
+        //Если есть новые продукты то добавляем в базу данных
+        $addProducts = [];
+        if(count($insertProducts) > 0)
+        {
+            foreach ($insertProducts as $item)
+            {
+                $addProducts[] = DB::table('products')->insert([
+                    'recipe_id' => $recipe['id'],
+                    'name' => $item['name'],
+                    'quantity' => $item['quantity'],
+                    'units' => $item['units'],
+                ]);
+            }
+        }
+
+        //Если есть новые действия то добавляем в базу данных
+        $addActions = [];
+        if(count($insertActions) > 0)
+        {
+            foreach ($insertActions as $item)
+            {
+                $addActions[] = DB::table('actions')->insert([
+                    'recipe_id' => $recipe['id'],
+                    'name' => $item['name'],
+                    'quantity' => $item['quantity'],
+                    'units' => $item['units'],
+                ]);
+            }
         }
 
         return response()->json($recipe);
@@ -153,28 +349,21 @@ class RecipeController extends Controller
             return response()->json(['answer'=>false, 'message'=>'Нельзя удалять чужие рецепты']);
         }
 
-        $recipeId = $data['id'];
-
         try {
             $deletedActions = DB::table('actions')->where('recipe_id', '=', $data['id'])->delete();
             $deletedProducts = DB::table('products')->where('recipe_id', '=', $data['id'])->delete();
             $deletedRecipe = DB::table('recipes')->where('id', '=', $data['id'])->delete();
 
-
-
             $answerData = [
                 'answer'=>true,
-                'message'=>'Рецепт ' . $recipeId . ' успешно удален',
-//                'deletedActions'=>$deletedActions,
-//                'deletedProducts'=>$deletedProducts,
-//                'deletedRecipe'=>$deletedRecipe,
+                'message'=>'Рецепт ' . $data['id'] . ' успешно удален',
             ];
             return response()->json($answerData);
         }
         catch (Exception $e){
             $answerData = [
                 'answer'=>false,
-                'message'=>'Рецепт ' . $recipeId . ' не удален',
+                'message'=>'Рецепт ' . $data['id'] . ' не удален',
                 'errMessage'=>$e->getMessage(),
             ];
             return response()->json($answerData);

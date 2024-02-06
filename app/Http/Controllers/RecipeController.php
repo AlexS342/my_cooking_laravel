@@ -11,8 +11,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use PhpParser\Node\Expr\Cast\Object_;
-use function PHPUnit\Framework\isEmpty;
 
 class RecipeController extends Controller
 {
@@ -42,7 +40,7 @@ class RecipeController extends Controller
     public function getMyUserRecipes():JsonResponse
     {
         $user = Auth::user();
-        $recipes = Recipe::query()->where('user_id',  $user->id)->get();
+        $recipes = Recipe::query()->where('user_id',  $user['id'])->get();
 
         foreach ($recipes as $recipe)
         {
@@ -62,7 +60,7 @@ class RecipeController extends Controller
     public function getSaveUserRecipes():JsonResponse
     {
         //Временное решение, пока нет таблицы с сохраненными рецептами
-        $user = Auth::user();
+//        $user = Auth::user();
         $recipes = Recipe::query()->where('user_id',  '=', 0)->get();
 
         foreach ($recipes as $recipe)
@@ -90,7 +88,7 @@ class RecipeController extends Controller
         try {
             $userId = DB::table('recipes')
                 ->insertGetId([
-                    'user_id' => $user->id,
+                    'user_id' => $user['id'],
                     'title' => $recipe['title'],
                     'portion' => $recipe['portion'],
                     'full_time' => $recipe['full_time'],
@@ -139,13 +137,13 @@ class RecipeController extends Controller
         $data = $request->all();
 
         try {
-            $recipe = Recipe::find($data['recipe_id']);
+            $recipe = Recipe::query()->where('id', '=', $data['recipe_id'])->first();
 
             $products = Product::query()->where('recipe_id', $data['recipe_id'])->orderBy('id')->get();
-            $recipe->products = $products;
+            $recipe['products'] = $products;
 
             $actions = Action::query()->where('recipe_id', $data['recipe_id'])->orderBy('id')->get();
-            $recipe->actions = $actions;
+            $recipe['actions'] = $actions;
         }catch (Exception $e){
             return response()->json($e);
         }
@@ -158,7 +156,7 @@ class RecipeController extends Controller
      * @param RecipeRequest $request
      * @return JsonResponse
      */
-    public function editMyRecipe(RecipeRequest $request)
+    public function editMyRecipe(RecipeRequest $request):JsonResponse
     {
         $user = Auth::user();
         $recipe = $request->all();
@@ -170,7 +168,7 @@ class RecipeController extends Controller
         }
 
         //Сохраняем изменения в рецепте (продукты и действия сохроняются отдельно)
-        $updateRecipe = DB::table('recipes')->where('id', $recipe['id'])
+        DB::table('recipes')->where('id', $recipe['id'])
             ->update([
                 'user_id' => $user['id'],
                 'title' => $recipe['title'],
@@ -252,10 +250,9 @@ class RecipeController extends Controller
         //Если найдены продукты для удаления, то удаляем
         try {
             if(count($delProducts) > 0){
-                $deletedProducts = [];
-                foreach ($delProducts as $key => $item)
+                foreach ($delProducts as $item)
                 {
-                    $deletedProducts[] = DB::table('products')->where('id', '=', $item)->delete();
+                    DB::table('products')->where('id', '=', $item)->delete();
                 }
             }
         }catch (Exception $e){
@@ -264,12 +261,11 @@ class RecipeController extends Controller
 
         //Если найдены действия для удаления, то удаляем
         try {
-            $deletedActions = [];
             if(count($delActions) > 0)
             {
-                foreach ($delActions as $key => $item)
+                foreach ($delActions as $item)
                 {
-                    $deletedActions[] = DB::table('actions')->where('id', '=', $item)->delete();
+                    DB::table('actions')->where('id', '=', $item)->delete();
                 }
             }
         }catch (Exception $e){
@@ -277,12 +273,11 @@ class RecipeController extends Controller
         }
 
         //Обновляем продукты
-        $editProducts = [];
         if(count($updateProducts) > 0)
         {
             foreach ($updateProducts as $item)
             {
-                $editProducts[] = DB::table('products')->where('id', $item['id'])
+                DB::table('products')->where('id', $item['id'])
                     ->update([
                         'name' => $item['name'],
                         'quantity' => $item['quantity'],
@@ -292,12 +287,11 @@ class RecipeController extends Controller
         }
 
         //Обновляем действия
-        $editActions = [];
         if(count($updateActions) > 0)
         {
             foreach ($updateActions as $item)
             {
-                $editActions[] = DB::table('actions')->where('id', $item['id'])
+                DB::table('actions')->where('id', $item['id'])
                     ->update([
                         'name' => $item['name'],
                         'quantity' => $item['quantity'],
@@ -307,12 +301,11 @@ class RecipeController extends Controller
         }
 
         //Если есть новые продукты то добавляем в базу данных
-        $addProducts = [];
         if(count($insertProducts) > 0)
         {
             foreach ($insertProducts as $item)
             {
-                $addProducts[] = DB::table('products')->insert([
+                DB::table('products')->insert([
                     'recipe_id' => $recipe['id'],
                     'name' => $item['name'],
                     'quantity' => $item['quantity'],
@@ -322,12 +315,11 @@ class RecipeController extends Controller
         }
 
         //Если есть новые действия то добавляем в базу данных
-        $addActions = [];
         if(count($insertActions) > 0)
         {
             foreach ($insertActions as $item)
             {
-                $addActions[] = DB::table('actions')->insert([
+                DB::table('actions')->insert([
                     'recipe_id' => $recipe['id'],
                     'name' => $item['name'],
                     'quantity' => $item['quantity'],
@@ -339,7 +331,7 @@ class RecipeController extends Controller
         return response()->json($recipe);
     }
 
-    public function delMyRecipe(Request $request)
+    public function delMyRecipe(Request $request):JsonResponse
     {
         $user = Auth::user();
         $data = $request->all();
@@ -350,9 +342,9 @@ class RecipeController extends Controller
         }
 
         try {
-            $deletedActions = DB::table('actions')->where('recipe_id', '=', $data['id'])->delete();
-            $deletedProducts = DB::table('products')->where('recipe_id', '=', $data['id'])->delete();
-            $deletedRecipe = DB::table('recipes')->where('id', '=', $data['id'])->delete();
+            DB::table('actions')->where('recipe_id', '=', $data['id'])->delete();
+            DB::table('products')->where('recipe_id', '=', $data['id'])->delete();
+            DB::table('recipes')->where('id', '=', $data['id'])->delete();
 
             $answerData = [
                 'answer'=>true,

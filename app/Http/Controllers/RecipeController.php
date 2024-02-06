@@ -94,6 +94,7 @@ class RecipeController extends Controller
                     'full_time' => $recipe['full_time'],
                     'category' => $recipe['category'],
                     'type' => $recipe['type'],
+                    'created_at' => now(),
                 ]);
 
             $arrProducts=[];
@@ -176,6 +177,7 @@ class RecipeController extends Controller
                 'full_time' => $recipe['full_time'],
                 'category' => $recipe['category'],
                 'type' => $recipe['type'],
+                'updated_at' => now()
             ]);
 
         //Разделяем продукты на update и insert

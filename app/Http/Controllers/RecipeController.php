@@ -198,7 +198,7 @@ class RecipeController extends Controller
         $insertActions = [];
         foreach ($recipe['actions'] as $action)
         {
-            if(empty($product['id']))
+            if(empty($action['id']))
             {
                 $insertActions[] = $action;
             }else{

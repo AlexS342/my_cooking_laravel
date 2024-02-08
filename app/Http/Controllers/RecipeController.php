@@ -54,14 +54,58 @@ class RecipeController extends Controller
     }
 
     /**
+     * Метод добавляет закладку на рецепт
+     * @param RecipeRequest $request
+     * @return JsonResponse
+     */
+    public function setBookmarkRecipe(Request $request):JsonResponse
+    {
+        $user = Auth::user();
+        $recipe_id = $request->get('recipe_id');
+
+        $check = DB::table('bookmarks')
+            ->where('user_id', '=', $user['id'])
+            ->where('recipe_id', '=', $recipe_id)
+            ->exists();
+
+        if(!$check){
+            $result = DB::table('bookmarks')
+                ->insert([
+                    'user_id' => $user['id'],
+                    'recipe_id' => $recipe_id,
+                    'created_at' => now()
+                ]);
+            if($result){
+                $addBookmark = true;
+                $message = 'Рецепт №' . $recipe_id . ' успешно добавлен в закладки';
+            }else{
+                $addBookmark = false;
+                $message = 'Неполучилось добавить рецепт №' . $recipe_id . ' в закладки';
+            }
+        }else{
+            $addBookmark = false;
+            $message = 'Рецепт №' . $recipe_id . ' уже был добавлен в ваши закладки рание';
+        }
+
+        return response()->json(['answer' => $addBookmark, 'message' => $message]);
+    }
+
+    /**
      * В будущем будет возвращать все чужие рецепты, на которые авторизированные пользователь сделал закладки
      * @return JsonResponse
      */
-    public function getSaveUserRecipes():JsonResponse
+    public function getBookmarkRecipe():JsonResponse
     {
         //Временное решение, пока нет таблицы с сохраненными рецептами
-//        $user = Auth::user();
-        $recipes = Recipe::query()->where('user_id',  '=', 0)->get();
+        $user = Auth::user();
+
+//        $recipes = Recipe::query()->where('user_id',  '=', 0)->get();
+
+        $recipes = DB::table('bookmarks')
+            ->join('recipes', 'bookmarks.recipe_id', '=', 'recipes.id')
+            ->where('bookmarks.user_id', '=', $user['id'])
+            ->select('recipes.*')
+            ->get();
 
         foreach ($recipes as $recipe)
         {
@@ -333,6 +377,11 @@ class RecipeController extends Controller
         return response()->json($recipe);
     }
 
+    /**
+     * Удаляет выбраный рецепт
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function delMyRecipe(Request $request):JsonResponse
     {
         $user = Auth::user();

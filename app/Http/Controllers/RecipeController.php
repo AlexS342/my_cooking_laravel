@@ -91,7 +91,7 @@ class RecipeController extends Controller
     }
 
     /**
-     * В будущем будет возвращать все чужие рецепты, на которые авторизированные пользователь сделал закладки
+     * Возвращает чужие рецепты, на которые пользователь сделал закладку
      * @return JsonResponse
      */
     public function getBookmarkRecipe():JsonResponse
@@ -116,6 +116,39 @@ class RecipeController extends Controller
         }
 
         return response()->json($recipes);
+    }
+
+    public function delBookmarkRecipe(Request $request):JsonResponse
+    {
+        $user = Auth::user();
+        $recipe_id = $request->get('recipe_id');
+
+//        if($user['id'] != $recipe_id)
+//        {
+//            return response()->json(['answer'=>false, 'message'=>'У вас нет на прав на это действие']);
+//        }
+
+        try {
+            DB::table('bookmarks')
+                ->where('recipe_id', '=', $recipe_id)
+                ->where('user_id', '=', $user['id'])
+                ->delete();
+
+            $answerData = [
+                'answer'=>true,
+                'message'=>'Рецепт ' . $recipe_id . ' успешно удален',
+            ];
+            return response()->json($answerData);
+        }
+        catch (Exception $e){
+            $answerData = [
+                'answer'=>false,
+                'message'=>'Рецепт ' . $recipe_id . ' не удален',
+                'errMessage'=>$e->getMessage(),
+            ];
+            return response()->json($answerData);
+        }
+
     }
 
     /**
